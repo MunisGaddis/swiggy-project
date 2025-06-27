@@ -1,0 +1,128 @@
+DevOps Real-time Project: Swiggy Clone App Deployment
+
+Tools & Services Used:
+Terraform 
+GitHub 
+Jenkins 
+SonarQube 
+OWASP
+Trivy 
+Docker & DockerHub 
+**************************************************************************************************************************
+
+Make sure Terraform is installed on Local 
+
+Terraform Script
+
+git clone https://github.com/KastroVKiran/Terraform-Script-Swiggy-Kastro.git
+
+Create Instance via Terraform
+Configure AWS
+Terraform init
+Terraform plan
+Terraform apply
+***************************************************************************************************************************************************************
+Install Jenkins, Docker, SonarQube and Trivy 
+
+docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+
+Install trivy
+
+sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy -y
+
+access jenkins on ip:8080
+access sonarqube on ip:9000
+
+Sonarqube user name and password is admin 
+set the password of your choice
+****************************************************************************************************************************
+Step 1 – Install Required Plugins
+Go to Jenkins Dashboard ➜ Manage Jenkins ➜ Manage Plugins ➜ Available tab.
+
+Search and install these plugins (check them all and click “Install without restart”):
+
+Eclipse Temurin Installer (adoptopenjdk)
+SonarQube Scanner
+NodeJS
+OWASP Dependency-Check
+Docker Pipeline
+Docker Commons
+Docker API
+Docker plugin
+(These four cover “docker all plugins”)
+
+🎯 Step 2 – Configure Eclipse Temurin JDK
+If you have already installed Temurin JDK on your Jenkins controller:
+
+Go to Jenkins Dashboard ➜ Manage Jenkins ➜ Global Tool Configuration.
+
+Scroll to “JDK” section.
+Click “Add JDK.”
+
+Name:temurin-17
+Uncheck “Install automatically.”
+
+JAVA_HOME:
+/usr/lib/jvm/temurin-17-jdk-amd64
+
+Click “Save.”
+
+🎯 Step 3 – Create SonarQube Token and Add to Jenkins Credentials
+In SonarQube:
+
+Log into SonarQube web UI.
+Go to your profile (top right) ➜ My Account ➜ Security.
+Generate a new token:
+
+Name: jenkins-token
+Copy the generated token and save it safely.
+
+In Jenkins:
+Go to Jenkins Dashboard ➜ Manage Jenkins ➜ Credentials ➜ (select a domain or Global).
+Click “Add Credentials.”
+
+Kind:Secret text
+Secret: Paste your SonarQube token.
+ID:sonar-token
+Description:sonar-token
+Click “OK.”
+
+🎯 Step 4 – Create SonarQube Webhook
+In SonarQube:
+Administration ➜ Configuration ➜ Webhooks.
+Click “Create.”
+
+Name:jenkins
+URL:http://192.168.88.128:8080/sonarqube-webhook
+Click “Create.”
+
+🎯 Step 5 – Configure SonarQube Server in Jenkins
+Go to Jenkins Dashboard ➜ Manage Jenkins ➜ Configure System.
+
+Find the “SonarQube servers” section.
+Click “Add SonarQube.”
+
+Name:sonar-server
+Server URL:http://<IP>:<port>
+(Replace <IP>:<port> with your SonarQube server address.)
+
+Server Authentication Token:
+Select sonar-token from the dropdown.
+Check “Enable injection of SonarQube server configuration as build environment variables.”
+Click “Apply” and “Save.”
+
+🎯 Step 6 – Configure Docker Hub Credentials
+Go to Jenkins Dashboard ➜ Manage Jenkins ➜ Credentials ➜ (select Global).
+Click “Add Credentials.”
+
+Kind:Username with password
+Username:dockerhub
+Password:Your Docker Hub password.
+
+ID:docker-creds
+Description:docker-creds
+Click “OK.”
